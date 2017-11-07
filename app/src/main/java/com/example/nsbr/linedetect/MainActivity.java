@@ -107,12 +107,13 @@ public class MainActivity extends AppCompatActivity {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
+                rectImg =null;
                 tv1.setText(String.valueOf(progress));
                 mCannyThresh1 = progress;
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
-                // TODO Auto-generated method stub
+
             }
 
             public void onStopTrackingTouch(SeekBar seekBar) {
@@ -128,12 +129,13 @@ public class MainActivity extends AppCompatActivity {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
+                rectImg =null;
                 tv2.setText(String.valueOf(progress));
                 mCannyThresh2 = progress;
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
-                // TODO Auto-generated method stub
+
             }
 
             public void onStopTrackingTouch(SeekBar seekBar) {
@@ -240,10 +242,11 @@ public class MainActivity extends AppCompatActivity {
             //Imgproc.threshold(grayImg, thresholdImg, 0, 255, Imgproc.THRESH_BINARY);
 
             //TODO - remove later
-            saveImage(thresholdImg);
+            //saveImage(thresholdImg);
 
             Mat bluredImg = new Mat();
-            //Imgproc.medianBlur(thresholdImg, bluredImg, 3);
+            //Imgproc.medianBlur(thresholdImg, bluredImg, 5);
+            //Imgproc.blur(thresholdImg, bluredImg, new Size(3, 3));
             Imgproc.GaussianBlur(thresholdImg, bluredImg, new Size(3, 3), 20);
             //saveImage(bluredImg);
 
@@ -252,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
             Imgproc.Canny(bluredImg, cannyImg, thresh1, thresh2);
 
             //TODO - remove later
-            saveImage(cannyImg);
+            //saveImage(cannyImg);
 
             cannyBlured = new Mat();
             Imgproc.blur(cannyImg, cannyBlured, new Size(3, 3));
@@ -299,8 +302,6 @@ public class MainActivity extends AppCompatActivity {
         Mat hierar = new Mat();
         MatOfInt hulll = new MatOfInt();
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        List<Rect> rects = new ArrayList<Rect>();
-        int yy = 0;
         Imgproc.findContours(canny, contours, hierar, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
         for (int i = 0; i < contours.size(); i++)
         {
@@ -423,7 +424,6 @@ public class MainActivity extends AppCompatActivity {
         Bitmap bm = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mat, bm);
         storeImage(bm);
-        Toast.makeText(this, "image saved!", Toast.LENGTH_SHORT).show();
     }
 
     private File getOutputMediaFile(){
@@ -468,6 +468,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Void doInBackground(Object... params) {
                 if (cannyBlured != null) {
+                    saveImage(cannyImg);
                     detectRects(cannyBlured);
                 }
                 return null;
@@ -476,7 +477,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-                if (mBitmap != null) {
+                if (cannyBlured != null) {
                     tv3.setText("Processing");
                 }else
                     Toast.makeText(MainActivity.this, "choose a picture!", Toast.LENGTH_SHORT).show();
@@ -485,7 +486,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
-                tv3.setText("finished Processing");
+                if (cannyBlured != null) {
+                    tv3.setText("Process Finished");
+                }
+
             }
 
             @Override
