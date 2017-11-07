@@ -79,12 +79,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <Button
-                    android:id="@+id/btn_save_image"
+                    android:id="@+id/btn_process"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:text="Save Canny Image"
-                    android:onClick="saveCannyImage"/>
+                    android:text="Process"
+                    android:onClick="process"/>
+                <TextView
+                    android:id="@+id/tv3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/btn_process"
+                    android:paddingTop="14dp"
+                    android:paddingLeft="20dp"
+                    android:text=""
+                    />
 
             </RelativeLayout>
 

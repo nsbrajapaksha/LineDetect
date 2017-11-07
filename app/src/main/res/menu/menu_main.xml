@@ -14,8 +14,8 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_line_detected"
+        android:id="@+id/action_rects_detected"
         android:orderInCategory="3"
-        android:title="Line Detected Image"
+        android:title="Rects Detected Image"
         app:showAsAction="never" />
 </menu>

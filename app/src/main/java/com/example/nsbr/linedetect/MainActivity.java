@@ -61,9 +61,9 @@ public class MainActivity extends AppCompatActivity {
     private int mCannyThresh1 = 10;
     private int mCannyThresh2 = 210;
     private Bitmap mBitmap = null;
-    private TextView tv1, tv2;
-    private Mat img, cannyImg;
-    private Button saveButton;
+    private TextView tv1, tv2, tv3;
+    private Mat rectImg, img, cannyImg, cannyBlured;
+    private Button processButton;
 
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -93,7 +93,8 @@ public class MainActivity extends AppCompatActivity {
         mMainImage = (ImageView)findViewById(R.id.iv);
         tv1 = (TextView) findViewById(R.id.tv1);
         tv2 = (TextView) findViewById(R.id.tv2);
-        saveButton = (Button) findViewById(R.id.btn_save_image);
+        tv3 = (TextView) findViewById(R.id.tv3);
+        processButton = (Button) findViewById(R.id.btn_process);
 
         SeekBar seekBar1 = (SeekBar) findViewById(R.id.sb_thresh1);
         SeekBar seekBar2 = (SeekBar) findViewById(R.id.sb_thresh2);
@@ -118,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
                 if (mBitmap != null) {
                     mMainImage.setImageBitmap(getCannyImage(mCannyThresh1, mCannyThresh2));
                 }
+
             }
         });
 
@@ -138,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 if (mBitmap != null) {
                     mMainImage.setImageBitmap(getCannyImage(mCannyThresh1, mCannyThresh2));
                 }
+
             }
         });
         tv1.setText(String.valueOf(seekBar1.getProgress()));
@@ -222,7 +225,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public Bitmap getCannyImage(int thresh1, int thresh2){
+    private Bitmap getCannyImage(int thresh1, int thresh2){
+
         if (mBitmap != null)
         {
             Mat image = new Mat();
@@ -234,6 +238,8 @@ public class MainActivity extends AppCompatActivity {
             Mat thresholdImg = new Mat();
             Imgproc.adaptiveThreshold(grayImg,thresholdImg,255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 105, 5);
             //Imgproc.threshold(grayImg, thresholdImg, 0, 255, Imgproc.THRESH_BINARY);
+
+            //TODO - remove later
             saveImage(thresholdImg);
 
             Mat bluredImg = new Mat();
@@ -244,15 +250,13 @@ public class MainActivity extends AppCompatActivity {
             //Imgproc.dilate(bluredImg, bluredImg, Imgproc.getStructuringElement(MORPH_ELLIPSE,new  Size( 3, 3 ), new Point( 1, 1 )));
             cannyImg = new Mat();
             Imgproc.Canny(bluredImg, cannyImg, thresh1, thresh2);
+
+            //TODO - remove later
             saveImage(cannyImg);
 
-            Mat cannyBlured = new Mat();
+            cannyBlured = new Mat();
             Imgproc.blur(cannyImg, cannyBlured, new Size(3, 3));
-            try {
-                detectRects(cannyBlured);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
             //detectLine(cannyBlured);
 
             return convertMatToBitmap(cannyImg);
@@ -268,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
         return bmp;
     }
 
-    private void detectLine(Mat cannyImg) {
+    /*private void detectLine(Mat cannyImg) {
         Mat LinesMat = new Mat();
         double length = 0;
         double skewAngle = 0;
@@ -280,78 +284,54 @@ public class MainActivity extends AppCompatActivity {
             if (angle < 50 && angle > -50) {
                 double lineLength = (l[3] - l[1]) * (l[3] - l[1]) + (l[2] - l[0]) * (l[2] - l[0]);
                 Imgproc.line(img, new Point(l[0], l[1]), new Point(l[2], l[3]), new Scalar(255, 0, 0), 3);
-                /*if (lineLength > length) {
+                *//*if (lineLength > length) {
                     length = lineLength;
                     skewAngle = angle;
                     //Imgproc.line( mImg, new Point(l[0], l[1]), new Point(l[2], l[3]), COLOR_RED, 2);
-                }*/
+                }*//*
             }
         }
         //saveImage(img);
-    }
+    }*/
 
-    public void detectRects(final Mat canny) throws IOException
+    private void detectRects(Mat canny)
     {
+        Mat hierar = new Mat();
+        MatOfInt hulll = new MatOfInt();
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        List<Rect> rects = new ArrayList<Rect>();
+        int yy = 0;
+        Imgproc.findContours(canny, contours, hierar, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        for (int i = 0; i < contours.size(); i++)
+        {
+            double area = Imgproc.contourArea(contours.get(i));
+            if (area < 3500)
+                continue;
 
-        Log.i(TAG, "processing....");
+            Imgproc.convexHull(contours.get(i), hulll);
 
-        new AsyncTask<Object, Integer, Void>() {
+            MatOfPoint hullContour = hull2Points(hulll, contours.get(i));
+            Rect box = Imgproc.boundingRect(hullContour);
 
-            @Override
-            protected Void doInBackground(Object... params) {
-                Mat hierar = new Mat();
-                MatOfInt hulll = new MatOfInt();
-                List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-                List<Rect> rects = new ArrayList<Rect>();
-                int yy = 0;
-                Imgproc.findContours(canny, contours, hierar, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-                for (int i = 0; i < contours.size(); i++)
-                {
-                    double area = Imgproc.contourArea(contours.get(i));
-                    if (area < 3500)
-                        continue;
+            int x1 = (int) box.tl().x;
+            int y1 = (int) box.tl().y;
+            int x2 = (int) box.br().x;
+            int y2 = (int) box.br().y;
+            Rect segRect = new Rect(x1, y1, x2, y2);
 
-                    Imgproc.convexHull(contours.get(i), hulll);
+            if (box.width < 280 && box.height < 150 && box.width > 170 && box.height > 115) {
 
-                    MatOfPoint hullContour = hull2Points(hulll, contours.get(i));
-                    Rect box = Imgproc.boundingRect(hullContour);
-
-                    int x1 = (int) box.tl().x;
-                    int y1 = (int) box.tl().y;
-                    int x2 = (int) box.br().x;
-                    int y2 = (int) box.br().y;
-                    Rect segRect = new Rect(x1, y1, x2, y2);
-
-                    if (box.width < 280 && box.height < 150 && box.width > 170 && box.height > 115) {
-
-                        if (y2 > canny.height()*0.77){
-                            Imgproc.rectangle(img, new Point(x1, y1), new Point(x2, y2), new Scalar(255, 0, 0), 3);
-                        }
-
-                    }
-
+                if (y2 > canny.height()*0.77){
+                    Imgproc.rectangle(img, new Point(x1, y1), new Point(x2, y2), new Scalar(255, 0, 0), 3);
                 }
 
-                saveImage(img);
-                return null;
             }
 
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-            }
+        }
+        rectImg = img.clone();
 
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-            }
-
-            @Override
-            protected void onProgressUpdate(Integer... values) {
-                super.onProgressUpdate(values);
-            }
-
-        }.execute();
+        //TODO - remove later
+        saveImage(img);
     }
 
     private MatOfPoint hull2Points(MatOfInt hull, MatOfPoint contour) {
@@ -402,19 +382,25 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_image) {
             if (mBitmap != null) {
                 mMainImage.setImageBitmap(mBitmap);
-            }
+            }else Toast.makeText(MainActivity.this, "choose a picture!", Toast.LENGTH_SHORT).show();
+
             return true;
         }
 
         if (id == R.id.action_canny) {
-            mMainImage.setImageBitmap(getCannyImage(mCannyThresh1, mCannyThresh2));
+            if (mBitmap != null) {
+                mMainImage.setImageBitmap(getCannyImage(mCannyThresh1, mCannyThresh2));
+
+            }else Toast.makeText(MainActivity.this, "choose a picture!", Toast.LENGTH_SHORT).show();
+
             return true;
         }
 
-        if (id == R.id.action_line_detected) {
-            if (mBitmap != null) {
-                mMainImage.setImageBitmap(convertMatToBitmap(img));
-            }
+        if (id == R.id.action_rects_detected) {
+            if (rectImg != null) {
+                mMainImage.setImageBitmap(convertMatToBitmap(rectImg));
+            }else
+                Toast.makeText(this, "Process the image to get rect detected image!", Toast.LENGTH_SHORT).show();
             return true;
         }
 
@@ -474,9 +460,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void saveCannyImage(View view){
-        if (mBitmap != null) {
-            saveImage(cannyImg);
-        } else Toast.makeText(this, "image not saved!", Toast.LENGTH_SHORT).show();
+    public void process(View view){
+        Log.i(TAG, "processing....");
+
+        new AsyncTask<Object, Integer, Void>() {
+
+            @Override
+            protected Void doInBackground(Object... params) {
+                if (cannyBlured != null) {
+                    detectRects(cannyBlured);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                if (mBitmap != null) {
+                    tv3.setText("Processing");
+                }else
+                    Toast.makeText(MainActivity.this, "choose a picture!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                tv3.setText("finished Processing");
+            }
+
+            @Override
+            protected void onProgressUpdate(Integer... values) {
+                super.onProgressUpdate(values);
+            }
+
+        }.execute();
     }
 }
