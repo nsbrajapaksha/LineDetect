@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private int mCannyThresh1 = 10;
     private int mCannyThresh2 = 210;
     private Bitmap mBitmap = null;
-    private TextView tv1, tv2;
+    private TextView tv1, tv2, tv3;
     private Mat img, cannyImg;
     private Button saveButton;
 
@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         mMainImage = (ImageView)findViewById(R.id.iv);
         tv1 = (TextView) findViewById(R.id.tv1);
         tv2 = (TextView) findViewById(R.id.tv2);
+        tv3 = (TextView) findViewById(R.id.tv3);
         saveButton = (Button) findViewById(R.id.btn_save_image);
 
         SeekBar seekBar1 = (SeekBar) findViewById(R.id.sb_thresh1);
@@ -225,6 +226,7 @@ public class MainActivity extends AppCompatActivity {
     public Bitmap getCannyImage(int thresh1, int thresh2){
         if (mBitmap != null)
         {
+            tv3.setText("Processing");
             Mat image = new Mat();
             Utils.bitmapToMat(mBitmap, image);
             img = image.clone();
@@ -344,6 +346,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
+                tv3.setText("finished processing");
             }
 
             @Override
