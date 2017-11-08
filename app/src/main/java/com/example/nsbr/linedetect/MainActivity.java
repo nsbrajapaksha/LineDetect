@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv1, tv2, tv3;
     private Mat rectImg, img, cannyImg, cannyBlured;
     private Button processButton;
+    private ProgressBar progressBar;
 
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -95,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
         tv2 = (TextView) findViewById(R.id.tv2);
         tv3 = (TextView) findViewById(R.id.tv3);
         processButton = (Button) findViewById(R.id.btn_process);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setMax(100);
+        progressBar.setVisibility(View.GONE);
 
         SeekBar seekBar1 = (SeekBar) findViewById(R.id.sb_thresh1);
         SeekBar seekBar2 = (SeekBar) findViewById(R.id.sb_thresh2);
@@ -305,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
         //saveImage(img);
     }*/
 
-    private void detectRects(Mat canny)
+    /*private void detectRects(Mat canny)
     {
         Mat hierar = new Mat();
         MatOfInt hulll = new MatOfInt();
@@ -321,7 +326,6 @@ public class MainActivity extends AppCompatActivity {
 
             MatOfPoint hullContour = hull2Points(hulll, contours.get(i));
             Rect box = Imgproc.boundingRect(hullContour);
-
             int x1 = (int) box.tl().x;
             int y1 = (int) box.tl().y;
             int x2 = (int) box.br().x;
@@ -341,7 +345,7 @@ public class MainActivity extends AppCompatActivity {
 
         //TODO - remove later
         saveImage(img);
-    }
+    }*/
 
     private MatOfPoint hull2Points(MatOfInt hull, MatOfPoint contour) {
         List<Integer> indexes = hull.toList();
@@ -477,25 +481,64 @@ public class MainActivity extends AppCompatActivity {
             protected Void doInBackground(Object... params) {
                 if (cannyBlured != null) {
                     saveImage(cannyImg);
-                    detectRects(cannyBlured);
+                    publishProgress(10);
+
+                    Mat hierar = new Mat();
+                    MatOfInt hulll = new MatOfInt();
+                    List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+                    Imgproc.findContours(cannyBlured, contours, hierar, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+                    publishProgress(25);
+                    for (int i = 0; i < contours.size(); i++)
+                    {
+                        double area = Imgproc.contourArea(contours.get(i));
+                        if (area < 3500)
+                            continue;
+
+                        Imgproc.convexHull(contours.get(i), hulll);
+
+                        MatOfPoint hullContour = hull2Points(hulll, contours.get(i));
+                        Rect box = Imgproc.boundingRect(hullContour);
+                        int x1 = (int) box.tl().x;
+                        int y1 = (int) box.tl().y;
+                        int x2 = (int) box.br().x;
+                        int y2 = (int) box.br().y;
+                        Rect segRect = new Rect(x1, y1, x2, y2);
+
+                        if (box.width < 280 && box.height < 150 && box.width > 170 && box.height > 115) {
+
+                            if (y2 > cannyBlured.height()*0.77){
+                                Imgproc.rectangle(img, new Point(x1, y1), new Point(x2, y2), new Scalar(255, 0, 0), 3);
+                            }
+
+                        }
+
+                    }
+                    publishProgress(70);
+                    rectImg = img.clone();
+
+                    //TODO - remove later
+                    saveImage(img);
+
+                    publishProgress(99);
                 }
                 return null;
             }
 
             @Override
             protected void onPreExecute() {
-                super.onPreExecute();
                 if (cannyBlured != null) {
                     tv3.setText("Processing");
                     processButton.setEnabled(false);
+                    progressBar.setVisibility(View.VISIBLE);
+                    progressBar.setProgress(0);
                 }else
                     Toast.makeText(MainActivity.this, "choose a picture!", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
                 if (cannyBlured != null) {
+                    progressBar.setVisibility(View.GONE);
                     tv3.setText("Process Finished");
                 }
 
@@ -503,7 +546,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             protected void onProgressUpdate(Integer... values) {
-                super.onProgressUpdate(values);
+                progressBar.setProgress(values[0]);
             }
 
         }.execute();
