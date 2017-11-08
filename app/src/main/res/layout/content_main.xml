@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/holo_blue_light"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.nsbr.linedetect.MainActivity"
     tools:showIn="@layout/activity_main">
@@ -18,92 +19,102 @@
 
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@android:color/holo_blue_light">
 
             <ImageView
                 android:id="@+id/iv"
                 android:layout_width="match_parent"
                 android:layout_height="350dp"
-                android:scaleType="centerCrop"/>
+                android:scaleType="centerCrop"
+                android:background="@android:color/white"/>
 
             <LinearLayout
-
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="Threshold1: "
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="5dp"
-                    android:paddingLeft="8dp"/>
-
-                <TextView
-                    android:id="@+id/tv1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:paddingTop="5dp"/>
-
-            </LinearLayout>
-
-
-            <SeekBar
-                android:id="@+id/sb_thresh1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="7dp"
-                android:max="1000"/>
+                android:orientation="vertical">
 
-            <LinearLayout
+                <LinearLayout
 
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:text="Threshold2: "
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="Threshold1: "
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="5dp"
+                        android:paddingLeft="8dp"/>
+
+                    <TextView
+                        android:id="@+id/tv1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:paddingTop="5dp"/>
+
+                </LinearLayout>
+
+
+                <SeekBar
+                    android:id="@+id/sb_thresh1"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingTop="5dp"
-                    android:paddingLeft="8dp"/>
+                    android:background="?attr/colorPrimary"
+                    android:max="1000"
+                    android:layout_marginTop="5dp" />
 
-                <TextView
-                    android:id="@+id/tv2"
-                    android:layout_width="0dp"
+                <LinearLayout
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:text="Threshold2: "
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="5dp"
+                        android:paddingLeft="8dp"/>
+
+                    <TextView
+                        android:id="@+id/tv2"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:paddingTop="5dp" />
+
+                </LinearLayout>
+
+                <SeekBar
+                    android:id="@+id/sb_thresh2"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:paddingTop="5dp" />
+                    android:background="@color/colorPrimary"
+                    android:max="1000"
+                    android:layout_marginTop="5dp"/>
 
+                <RelativeLayout
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <Button
+                        android:id="@+id/btn_process"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Process"
+                        android:onClick="process"/>
+
+                    <TextView
+                        android:id="@+id/tv3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_toRightOf="@id/btn_process"
+                        android:paddingTop="14dp"
+                        android:paddingLeft="20dp"
+                        android:text=""
+                        />
+
+                </RelativeLayout>
             </LinearLayout>
-
-            <SeekBar
-                android:id="@+id/sb_thresh2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="7dp"
-                android:max="1000"/>
-
-            <RelativeLayout
-
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <Button
-                    android:id="@+id/btn_process"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Process"
-                    android:onClick="process"/>
-
-                <TextView
-                    android:id="@+id/tv3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toRightOf="@id/btn_process"
-                    android:paddingTop="14dp"
-                    android:paddingLeft="20dp"
-                    android:text=""
-                    />
-
-            </RelativeLayout>
 
         </LinearLayout>
 

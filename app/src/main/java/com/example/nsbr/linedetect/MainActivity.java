@@ -105,17 +105,21 @@ public class MainActivity extends AppCompatActivity {
         seekBar1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
 
+            @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
                 rectImg =null;
+                processButton.setEnabled(true);
                 tv1.setText(String.valueOf(progress));
                 mCannyThresh1 = progress;
             }
 
+            @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
 
             }
 
+            @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (mBitmap != null) {
                     mMainImage.setImageBitmap(getCannyImage(mCannyThresh1, mCannyThresh2));
@@ -127,17 +131,21 @@ public class MainActivity extends AppCompatActivity {
         seekBar2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
 
+            @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
                 rectImg =null;
+                processButton.setEnabled(true);
                 tv2.setText(String.valueOf(progress));
                 mCannyThresh2 = progress;
             }
 
+            @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
 
             }
 
+            @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (mBitmap != null) {
                     mMainImage.setImageBitmap(getCannyImage(mCannyThresh1, mCannyThresh2));
@@ -479,6 +487,7 @@ public class MainActivity extends AppCompatActivity {
                 super.onPreExecute();
                 if (cannyBlured != null) {
                     tv3.setText("Processing");
+                    processButton.setEnabled(false);
                 }else
                     Toast.makeText(MainActivity.this, "choose a picture!", Toast.LENGTH_SHORT).show();
             }
@@ -498,5 +507,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }.execute();
+
     }
 }
