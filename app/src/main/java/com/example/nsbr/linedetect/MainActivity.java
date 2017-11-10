@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (mBitmap != null) {
-                    mMainImage.setImageBitmap(getCannyImage(mCannyThresh1, mCannyThresh2));
+                    getCannyImage(mCannyThresh1, mCannyThresh2);
                 }
 
             }
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (mBitmap != null) {
-                    mMainImage.setImageBitmap(getCannyImage(mCannyThresh1, mCannyThresh2));
+                    getCannyImage(mCannyThresh1, mCannyThresh2);
                 }
 
             }
@@ -240,45 +240,56 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private Bitmap getCannyImage(int thresh1, int thresh2){
+    private void getCannyImage(final int thresh1, final int thresh2){
 
-        if (mBitmap != null)
-        {
-            Mat image = new Mat();
-            Utils.bitmapToMat(mBitmap, image);
-            img = image.clone();
-            Mat grayImg = new Mat(image.rows(), image.cols(), CvType.CV_8UC1);
-            Imgproc.cvtColor(image, grayImg, Imgproc.COLOR_RGB2GRAY);
+        new AsyncTask<Object, Void, Bitmap>() {
 
-            Mat thresholdImg = new Mat();
-            Imgproc.adaptiveThreshold(grayImg,thresholdImg,255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 105, 5);
-            //Imgproc.threshold(grayImg, thresholdImg, 0, 255, Imgproc.THRESH_BINARY);
+            @Override
+            protected Bitmap doInBackground(Object... params) {
+                if (mBitmap != null) {
+                    Mat image = new Mat();
+                    Utils.bitmapToMat(mBitmap, image);
+                    img = image.clone();
+                    Mat grayImg = new Mat(image.rows(), image.cols(), CvType.CV_8UC1);
+                    Imgproc.cvtColor(image, grayImg, Imgproc.COLOR_RGB2GRAY);
 
-            //TODO - remove later
-            //saveImage(thresholdImg);
+                    Mat thresholdImg = new Mat();
+                    Imgproc.adaptiveThreshold(grayImg, thresholdImg, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 105, 5);
+                    //Imgproc.threshold(grayImg, thresholdImg, 0, 255, Imgproc.THRESH_BINARY);
 
-            Mat bluredImg = new Mat();
-            //Imgproc.medianBlur(thresholdImg, bluredImg, 5);
-            //Imgproc.blur(thresholdImg, bluredImg, new Size(3, 3));
-            Imgproc.GaussianBlur(thresholdImg, bluredImg, new Size(3, 3), 20);
-            //saveImage(bluredImg);
+                    //TODO - remove later
+                    //saveImage(thresholdImg);
 
-            //Imgproc.dilate(bluredImg, bluredImg, Imgproc.getStructuringElement(MORPH_ELLIPSE,new  Size( 3, 3 ), new Point( 1, 1 )));
-            cannyImg = new Mat();
-            Imgproc.Canny(bluredImg, cannyImg, thresh1, thresh2);
+                    Mat bluredImg = new Mat();
+                    //Imgproc.medianBlur(thresholdImg, bluredImg, 5);
+                    //Imgproc.blur(thresholdImg, bluredImg, new Size(3, 3));
+                    Imgproc.GaussianBlur(thresholdImg, bluredImg, new Size(3, 3), 20);
+                    //saveImage(bluredImg);
 
-            //TODO - remove later
-            //saveImage(cannyImg);
+                    //Imgproc.dilate(bluredImg, bluredImg, Imgproc.getStructuringElement(MORPH_ELLIPSE,new  Size( 3, 3 ), new Point( 1, 1 )));
+                    cannyImg = new Mat();
+                    Imgproc.Canny(bluredImg, cannyImg, thresh1, thresh2);
 
-            cannyBlured = new Mat();
-            Imgproc.blur(cannyImg, cannyBlured, new Size(3, 3));
+                    //TODO - remove later
+                    //saveImage(cannyImg);
 
-            //detectLine(cannyBlured);
+                    cannyBlured = new Mat();
+                    Imgproc.blur(cannyImg, cannyBlured, new Size(3, 3));
 
-            return convertMatToBitmap(cannyImg);
-        }
+                    //detectLine(cannyBlured);
 
-        return null;
+                    return convertMatToBitmap(cannyImg);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Bitmap bitmap) {
+                mMainImage.setImageBitmap(bitmap);
+            }
+        }.execute();
+
+
     }
 
     private Bitmap convertMatToBitmap(Mat mat){
@@ -402,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (id == R.id.action_canny) {
             if (mBitmap != null) {
-                mMainImage.setImageBitmap(getCannyImage(mCannyThresh1, mCannyThresh2));
+                getCannyImage(mCannyThresh1, mCannyThresh2);
 
             }else Toast.makeText(MainActivity.this, "choose a picture!", Toast.LENGTH_SHORT).show();
 
